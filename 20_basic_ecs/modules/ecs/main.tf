@@ -58,7 +58,6 @@ resource "aws_iam_role_policy_attachment" "ecs" {
 ##########  ECS  ##########
 
 resource "aws_ecs_cluster" "my_ecs" {
-  # name = format("%s_HelloECS", var.prefix)
   name = "my-cluster"
   capacity_providers = [ "FARGATE" ]
 }

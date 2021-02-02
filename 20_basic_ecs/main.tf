@@ -10,7 +10,7 @@ terraform {
   }
 }
 
-##########  VPC  ##########
+##########  VPC + ECS  ##########
 
 module "my_vpc" {
   source = "./modules/vpc"
@@ -28,6 +28,8 @@ module "my_ecs" {
   subnet_ids = module.my_vpc.private_subnet_ids
 }
 
+##########  ECR  ##########
+
 resource "aws_ecr_repository" "my_ecr" {
     name  = format("%s-hello-world-loop", var.prefix)
 }
@@ -36,14 +38,16 @@ output "ecr_url" {
   value = aws_ecr_repository.my_ecr.repository_url
 }
 
+##########  Tasks and Services  ##########
+
 resource "aws_ecs_task_definition" "task_definition" {
-  family                = "hello-world-loop"
+  family                   = "hello-world-loop"
   network_mode             = "awsvpc"
-  execution_role_arn = module.my_ecs.execution_role_arn
+  execution_role_arn       = module.my_ecs.execution_role_arn
   requires_compatibilities = ["FARGATE"]
   cpu                      = "256"
   memory                   = "512"
-  container_definitions = file("hello-world-loop.json")
+  container_definitions    = file("hello-world-loop.json")
 }
 
 resource "aws_ecs_service" "worker" {
