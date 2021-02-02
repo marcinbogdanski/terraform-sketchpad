@@ -1,0 +1,10 @@
+[
+    {
+      "essential": true,
+      "memory": 512,
+      "name": "worker",
+      "cpu": 256,
+      "image": "467525903542.dkr.ecr.eu-west-2.amazonaws.com/xxx-hello-world-loop:latest",
+      "environment": []
+    }
+  ]

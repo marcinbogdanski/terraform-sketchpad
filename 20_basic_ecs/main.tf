@@ -28,10 +28,36 @@ module "my_ecs" {
   subnet_ids = module.my_vpc.private_subnet_ids
 }
 
+resource "aws_ecr_repository" "my_ecr" {
+    name  = format("%s-hello-world-loop", var.prefix)
+}
 
-# resource "aws_ecr_repository" "my_ecr" {
-#   name                 = format("%s_HelloECR", var.prefix)
-# }
+output "ecr_url" {
+  value = aws_ecr_repository.my_ecr.repository_url
+}
+
+resource "aws_ecs_task_definition" "task_definition" {
+  family                = "hello-world-loop"
+  network_mode             = "awsvpc"
+  execution_role_arn = module.my_ecs.execution_role_arn
+  requires_compatibilities = ["FARGATE"]
+  cpu                      = "256"
+  memory                   = "512"
+  container_definitions = file("hello-world-loop.json")
+}
+
+resource "aws_ecs_service" "worker" {
+  name            = "hello-world-loop"
+  cluster         = module.my_ecs.cluster_id
+  task_definition = aws_ecs_task_definition.task_definition.arn
+  desired_count   = 2
+  launch_type = "FARGATE"
+
+  network_configuration {
+    security_groups  = [module.my_vpc.security_group_id]
+    subnets          = module.my_vpc.private_subnet_ids
+  }
+}
 
 
 
