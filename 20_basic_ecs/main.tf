@@ -40,20 +40,37 @@ output "ecr_url" {
 
 ##########  Tasks and Services  ##########
 
-resource "aws_ecs_task_definition" "task_definition" {
+resource "aws_ecs_task_definition" "hello_world_loop" {
   family                   = "hello-world-loop"
   network_mode             = "awsvpc"
   execution_role_arn       = module.my_ecs.execution_role_arn
   requires_compatibilities = ["FARGATE"]
   cpu                      = "256"
   memory                   = "512"
-  container_definitions    = file("hello-world-loop.json")
+  container_definitions    = <<DEFINITION
+[
+  {
+    "essential": true,
+    "name": "hello-world-loop",
+    "image": "467525903542.dkr.ecr.eu-west-2.amazonaws.com/xxx-hello-world-loop:latest",
+    "environment": [],
+    "logConfiguration": {
+      "logDriver": "awslogs",
+      "options": {
+        "awslogs-group": "/fargate/service/xxx-hello-world-loop",
+        "awslogs-region": "${var.region}",
+        "awslogs-stream-prefix": "ecs"
+      }
+    }
+  }
+]
+DEFINITION
 }
 
-resource "aws_ecs_service" "worker" {
+resource "aws_ecs_service" "hello_world_loop" {
   name            = "hello-world-loop"
   cluster         = module.my_ecs.cluster_id
-  task_definition = aws_ecs_task_definition.task_definition.arn
+  task_definition = aws_ecs_task_definition.hello_world_loop.arn
   desired_count   = 2
   launch_type = "FARGATE"
 
@@ -63,7 +80,9 @@ resource "aws_ecs_service" "worker" {
   }
 }
 
-
+resource "aws_cloudwatch_log_group" "hello_world_loop" {
+  name              = "/fargate/service/xxx-hello-world-loop"
+}
 
 ##########  EC2  ##########
 

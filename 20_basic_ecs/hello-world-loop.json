@@ -1,8 +1,0 @@
-[
-    {
-      "essential": true,
-      "name": "hello-world-loop",
-      "image": "467525903542.dkr.ecr.eu-west-2.amazonaws.com/xxx-hello-world-loop:latest",
-      "environment": []
-    }
-  ]
