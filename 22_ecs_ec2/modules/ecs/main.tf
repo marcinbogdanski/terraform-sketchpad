@@ -2,7 +2,8 @@
 # Source for IAM, AutoScaling and ECS
 # - https://medium.com/swlh/creating-an-aws-ecs-cluster-of-ec2-instances-with-terraform-85a10b5cfbe3
 
-##########  IAM Stuff  ##########
+##########  IAM Execution Role  ##########
+# This is so ecs-agent can pull image from ECR
 
 data "aws_iam_policy_document" "ecs" {
   statement {
@@ -53,8 +54,11 @@ resource "aws_launch_configuration" "launch_config" {
   iam_instance_profile = aws_iam_instance_profile.task_execution_iam_profile.name
   security_groups      = [var.security_group_id]
   user_data            = "#!/bin/bash\necho ECS_CLUSTER=my-cluster >> /etc/ecs/ecs.config;\necho ECS_BACKEND_HOST= >> /etc/ecs/ecs.config;"
-  instance_type        = "t2.micro"
+  instance_type        = var.instance_type
   key_name = var.key_name
+  lifecycle {
+    create_before_destroy = true
+  }
 }
 
 resource "aws_autoscaling_group" "asg" {
@@ -62,11 +66,14 @@ resource "aws_autoscaling_group" "asg" {
     vpc_zone_identifier       = var.subnet_ids[*]
     launch_configuration      = aws_launch_configuration.launch_config.name
 
-    desired_capacity          = 2
+    desired_capacity          = var.desired_capacity
     min_size                  = 1
     max_size                  = 10
     health_check_grace_period = 300
     health_check_type         = "EC2"
+    lifecycle {
+      create_before_destroy = true
+    }
 }
 
 ##########  ECS  ##########

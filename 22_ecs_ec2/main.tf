@@ -27,6 +27,8 @@ module "my_ecs" {
   security_group_id = module.my_vpc.security_group_id
   subnet_ids = module.my_vpc.public_subnet_ids
   key_name = var.key_name
+  instance_type = var.instance_type
+  desired_capacity = var.desired_count
 }
 
 ##########  ECR  ##########
